@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Get the arguments 
+command=$1
+
+# Path to the conservation_mode file
+file_path="/sys/bus/platform/drivers/ideapad_acpi/VPC2004:00/conservation_mode"
+
+# Function 
+check_root() {
+    if [ "$(id -u)" != "0" ]; then
+        echo "This script must be run as root" >&2
+        exit 1
+    fi
+}
+change_status() {
+    echo $1 > "$file_path"
+}
+check_status() {
+    status=$(cat "$file_path")
+    if [ "$status" -eq 0 ]; then
+        echo "status: inactive"
+    elif [ "$status" -eq 1 ]; then
+        echo "status: active"
+    else
+        echo "Invalid status"
+    fi
+}
+
+
+# Execute
+case $command in
+    start)
+        check_root
+        change_status 1
+        check_status
+    ;;
+    stop)
+        check_root
+        change_status 0
+        check_status
+    ;;
+    status)
+        check_status
+    ;;
+    *)
+        echo "Usage: conv-mode <start|stop|status>"
+    ;;
+    esac
